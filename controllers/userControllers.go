@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/Aditya7880900936/auth_golang.git/database"
@@ -16,7 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var UserCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
@@ -67,8 +65,8 @@ func Signup() gin.HandlerFunc {
 		user.ID = primitive.NewObjectID()
 		user.User_id = user.ID.Hex()
 		token, refreshToken, _ := helper.GenerateAllTokens(*&user.Email, *&user.FirstName, *&user.LastName, *&user.UserType, *&user.User_id)
-		user.Token = &token
-		user.RefreshToken = &refreshToken
+		user.Token = token
+		user.RefreshToken = refreshToken
 
 		resultInsertionNumber, insertError := UserCollection.InsertOne(ctx, user)
 		if insertError != nil {

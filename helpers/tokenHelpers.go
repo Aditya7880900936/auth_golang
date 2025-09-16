@@ -1,10 +1,12 @@
 package helpers
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
-    "Context"
+
 	"github.com/Aditya7880900936/auth_golang.git/database"
 	jwt "github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
@@ -58,7 +60,6 @@ func GenerateAllTokens(email string, firstname string, lastname string, user_typ
 	return token, refreshToken, err
 }
 
-
 func UpdateAllTokens(signedToken string, signedRefreshToken string, userId string) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 
@@ -83,13 +84,43 @@ func UpdateAllTokens(signedToken string, signedRefreshToken string, userId strin
 		bson.D{
 			{"$set", updateObj},
 		},
-		&opt,	
+		&opt,
 	)
 	defer cancel()
 
-	if err!= nil {
+	if err != nil {
 		log.Panic(err)
 		return
 	}
 	return
+}
+
+func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
+	token, err := jwt.ParseWithClaims(
+		signedToken,
+		&SignedDetails{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(SECRET_KEY), nil
+		},
+	)
+
+	if err != nil {
+		msg = err.Error()
+		return
+	}
+
+	claims, ok := token.Claims.(*SignedDetails)
+	if !ok {
+		msg = fmt.Sprintf("The token is invalid")
+		msg = err.Error()
+		return
+	}
+
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		msg = fmt.Sprintf("token is expired")
+		msg = err.Error()
+		return
+	}
+
+	return claims, msg
 }

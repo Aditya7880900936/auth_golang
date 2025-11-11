@@ -11,7 +11,7 @@ import (
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8000"
+		port = "8080" // use Render default
 	}
 
 	router := gin.New()
@@ -28,6 +28,6 @@ func main() {
 		c.JSON(200, gin.H{"success": "Access granted for api-2"})
 	})
 
+	fmt.Println("🚀 Server is running on port", port)
 	router.Run(":" + port)
-	fmt.Println("Server is running on port", port)
 }
